@@ -3,8 +3,8 @@ import axios from 'axios';
 //use this axios configuration to execute api requests on Back End
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080', 
-  withCredentials: true 
+  baseURL: 'http://localhost:8080',
+  withCredentials: true
 });
 
 // Add a request interceptor to include the Authorization header with the token

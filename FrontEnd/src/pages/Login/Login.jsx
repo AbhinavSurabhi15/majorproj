@@ -167,7 +167,7 @@ function Login() {
           </div>
           <div className="mt-4 ml-4">
             <ReCAPTCHA
-              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
               onChange={handleCaptchaChange}
             />
           </div>

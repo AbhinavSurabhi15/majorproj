@@ -22,17 +22,18 @@ function ExerciseOne() {
   const [showReadingSpeedPopup, setShowReadingSpeedPopup] = useState(false);
 
   const location = useLocation();
-  const { maxAge } = location.state;
-  console.log(maxAge);
+  const maxAge = location.state?.maxAge || 18; // Default to 18 if not provided
+  console.log('maxAge:', maxAge);
 
   const getExercisebyAge = async () => {
     try {
       const response = await axios.get(`http://localhost:8080/exercise/getByAge/${maxAge}`);
-      console.log(response.data);
+      console.log('Exercise data:', response.data);
       setExercise(response.data);
       toast.success('Exercise fetched successfully!');
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching exercise:', error);
+      toast.error('Failed to fetch exercise. Please check if exercises exist for this age group.');
     }
   };
 
@@ -125,7 +126,7 @@ function ExerciseOne() {
           <Button onClick={handleEndReading} className="mr-2" disabled={!endReading}>
             End Reading <IoPauseCircleOutline />
           </Button>
-          <Link to="/comprehension" state={{ exercisedata: exercise[0] , readingSpeed: readingSpeed }}>
+          <Link to="/comprehension" state={{ exercisedata: exercise[0], readingSpeed: readingSpeed }}>
             <Button className="mr-2" disabled={endReading}>
               Next <FaRegArrowAltCircleRight />
             </Button>
@@ -134,7 +135,7 @@ function ExerciseOne() {
       </Card>
       <Dialog.Root open={showReadingSpeedPopup} onOpenChange={(open) => setShowReadingSpeedPopup(open)}>
         {/* <Dialog.Backdrop /> */}
-     
+
         <Dialog.Content>
           <Card className="p-6 mt-4">
             <Heading as="h2" className="text-xl font-bold mb-4">

@@ -5,19 +5,25 @@ import Result from '../models/ResultModel.js';
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import {generateEmail1} from '../services/forgetPasswordEmailService.js';
+import { generateEmail1 } from '../services/forgetPasswordEmailService.js';
 
 export const registerUser = async (req, res, next) => {
     try {
+        console.log("Registration request body:", req.body); // Add this
+
         //already exists
         const user = await User.findOne({ email: req.body.email })
-        const fetchedRole = await Role.findOne({name: req.body.role});
+        const fetchedRole = await Role.findOne({ name: req.body.role });
+
+        console.log("Existing user:", user); // Add this
+        console.log("Fetched role:", fetchedRole); // Add this
+
         if (user || !fetchedRole) {
             return res.status(400).json({
                 message: "User Already Exists OR Role Not Found",
-
             })
         }
+
         //create new user
         const createdUserObject = await User.create({
             name: req.body.name,
@@ -27,8 +33,16 @@ export const registerUser = async (req, res, next) => {
             city: null,
             isEmailVerified: false,
             isMFAEnabled: false,
-            role: await Role.findOne({ name: req.body.role }),
+            role: fetchedRole._id,  // Use fetchedRole._id instead of querying again
         })
+
+        console.log("Created user:", createdUserObject); // Add this
+
+        if (!createdUserObject) {
+            return res.status(400).json({
+                message: "Error in User Creation",
+            })
+        }
         const responseObject = {
             name: createdUserObject.name,
             email: createdUserObject.email,
@@ -37,9 +51,11 @@ export const registerUser = async (req, res, next) => {
         return res.status(200).json(responseObject)
     } catch (error) {
         console.error("Error Occured in Registration =>  ", error);
+        return res.status(500).json({
+            message: "Error in Registration: " + error.message
+        });
     }
 }
-
 //Login
 export const loginUser = async (req, res, next) => {
     try {
@@ -142,7 +158,7 @@ const getResultsByUserId = async (userId) => {
         const results = await Result.find({ user: userId }).populate({
             path: 'exercise'
         })
-            // .populate('user', 'name email'); // Specify user fields to populate
+        // .populate('user', 'name email'); // Specify user fields to populate
 
         return results;
     } catch (error) {
@@ -152,26 +168,26 @@ const getResultsByUserId = async (userId) => {
 }
 
 export const updateUser = async (req, res) => {
-    try{
-    const {email, name, age, city} = req.body;
+    try {
+        const { email, name, age, city } = req.body;
 
-    const user = await User.findOne({email: email})
-    
-    if(!user){
-        return res.status(404).json({message: 'User not found'});
+        const user = await User.findOne({ email: email })
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.name = name;
+        user.age = age;
+        user.city = city;
+
+        const updatedUser = await User.findOneAndUpdate({ _id: user._id }, { $set: user }, { new: true });
+        updatedUser.password = undefined;
+
+        return res.status(200).json({ user: updatedUser, success: true });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
-    user.name = name;
-    user.age = age;
-    user.city = city;
-
-    const updatedUser = await User.findOneAndUpdate({_id: user._id}, {$set: user}, {new: true});
-    updatedUser.password = undefined;
-
-    return res.status(200).json({user: updatedUser,success: true});
-}catch(err){
-    console.log(err);
-    return res.status(500).json({message: 'Internal Server Error'});
-}
 
 }
 
@@ -179,7 +195,7 @@ export const updateUser = async (req, res) => {
 //Forgot Password
 export const forgotPassword = async (req, res) => {
     // generateEmail1
-    return res.status(200).json({message: 'Forgot Password'});
+    return res.status(200).json({ message: 'Forgot Password' });
 }
 
 const setResponseObject = (initialResponseObject, userObject, userResult) => {
@@ -190,5 +206,5 @@ const setResponseObject = (initialResponseObject, userObject, userResult) => {
     initialResponseObject.age = userObject.age;
     initialResponseObject.city = userObject.city;
     initialResponseObject.result = userResult;
-    return initialResponseObject; 
+    return initialResponseObject;
 }
