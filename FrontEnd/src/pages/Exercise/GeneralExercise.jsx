@@ -44,7 +44,7 @@ function GeneralExercise() {
         setMaxAge(null);
         break;
     }
-  };
+  }
 
   const exercises = [
     { title: 'Exercise 1: Practice Fixation', level: 'Easy', path: "/exercise-one" },

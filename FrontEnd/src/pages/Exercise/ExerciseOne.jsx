@@ -119,7 +119,7 @@ function ExerciseOne() {
             </Badge>
           </Heading>
         </Flex>
-        <Card className="mb-8 w-48 mx-auto" id="reading-card">
+        <Card className="mb-8 w-480 mx-auto" id="reading-card">
           <p>{exercise[0]?.content?.text}</p>
         </Card>
         <Flex className="" gap="4" justify="center" alignItems="center" mb="4">
@@ -148,7 +148,7 @@ function ExerciseOne() {
           </Card>
         </Dialog.Content>
       </Dialog.Root>
-      <Card className="p-6 mt-2 mb-8 bg-gray-200">
+      {/* <Card className="p-6 mt-2 mb-8 bg-gray-200">
         <Heading as="h2" className="text-xl font-bold mb-4">
           <IoSettingsOutline className="inline mr-2" />
           Customize Settings
@@ -165,7 +165,7 @@ function ExerciseOne() {
             step="0.1"
           />
         </Flex>
-      </Card>
+      </Card> */}
     </div>
   );
 }
