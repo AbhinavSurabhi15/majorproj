@@ -6,7 +6,7 @@ import { routes } from './routes/indexRoutes.js'
 import cookieParser from 'cookie-parser'
 
 dotenv.config({
-    path: './env'
+    path: './.env'
 })
 connectDB(); //connecting to DataBase
 

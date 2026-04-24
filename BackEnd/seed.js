@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import Content from './models/ContentModel.js';
 import Exercise from './models/ExerciseModel.js';
 import MCQ from './models/MCQModel.js';
+import Role from './models/RoleModel.js';
 
 dotenv.config();
 
@@ -19,6 +20,18 @@ const seedData = async () => {
         await Content.deleteMany({});
         await Exercise.deleteMany({});
         console.log('Cleared existing data');
+
+        // Seed roles (don't delete existing to preserve user references)
+        const roles = ['user', 'admin'];
+        for (const roleName of roles) {
+            const existingRole = await Role.findOne({ name: roleName });
+            if (!existingRole) {
+                await Role.create({ name: roleName });
+                console.log(`Created role: ${roleName}`);
+            } else {
+                console.log(`Role already exists: ${roleName}`);
+            }
+        }
 
         // Comprehensive exercises with multiple per age group, longer text, more MCQs
         const exercisesData = [

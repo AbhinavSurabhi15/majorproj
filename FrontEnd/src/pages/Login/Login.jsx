@@ -1,9 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, Text, Box, Button, Heading } from '@radix-ui/themes';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { FiLogIn } from 'react-icons/fi';
-import ReCAPTCHA from 'react-google-recaptcha';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -20,15 +18,9 @@ import Cookies from 'js-cookie'
 
 function Login() {
   const navigate = useNavigate();
-  const recaptcha = useRef();
   const dispatch = useDispatch();
-  const [captchaToken, setCaptchaToken] = useState('');
   const [loading, setloading] = useState(false);
   const [data, setData] = useState({ email: '', password: '' });
-
-  const handleCaptchaChange = (token) => {
-    setCaptchaToken(token);
-  };
 
   const handleChange = (e) => {
     console.log(e.target.id, e.target.value);
@@ -39,10 +31,6 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!captchaToken) {
-      toast.error('Please complete the reCAPTCHA verification.');
-      return;
-    }
     if (!data.email || !data.password) {
       toast.error('All fields are required');
       return;
@@ -163,12 +151,6 @@ function Login() {
               autoComplete="off"
               onChange={handleChange}
               required
-            />
-          </div>
-          <div className="mt-4 ml-4">
-            <ReCAPTCHA
-              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-              onChange={handleCaptchaChange}
             />
           </div>
           <div className="mt-6 flex items-center justify-between">

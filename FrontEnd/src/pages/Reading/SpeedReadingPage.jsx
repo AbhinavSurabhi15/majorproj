@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoPlay, IoPause } from 'react-icons/io5';
-import { Button, Heading } from '@radix-ui/themes';
-import { Box, TextArea } from '@radix-ui/themes';
+import { Button, Heading, Badge, Card, Text } from '@radix-ui/themes';
+import { Box } from '@radix-ui/themes';
 import { useNavigate } from 'react-router-dom';
+import { FaRegArrowAltCircleRight } from 'react-icons/fa';
 
 function SpeedReadingPage({ content, filteredExercises }) {
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1); // Default speed
+  const [wpm, setWpm] = useState(200); // Words per minute
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [contentWords, setContentWords] = useState([]);
   const [textComplete, setTextComplete] = useState(false);
   const navigate = useNavigate();
   const [startTime, setStartTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const intervalRef = useRef(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (content) {
@@ -22,28 +25,39 @@ function SpeedReadingPage({ content, filteredExercises }) {
 
   const handlePlayPause = () => {
     if (!playing) {
-      setStartTime(Date.now());
-    } else {
-      clearInterval(intervalRef.current);
-      setTextComplete(true); // Text is complete
+      if (startTime === null) {
+        setStartTime(Date.now());
+      }
     }
     setPlaying(!playing);
-  };
-
-  const handleSpeedChange = (newSpeed) => {
-    setSpeed(newSpeed);
   };
 
   const handleReplay = () => {
     setCurrentWordIndex(0);
     setPlaying(false);
     setTextComplete(false);
-    setStartTime(null); // Reset start time
+    setStartTime(null);
+    setElapsedTime(0);
     clearInterval(intervalRef.current);
+    clearInterval(timerRef.current);
   };
 
+  // Timer effect
   useEffect(() => {
     if (playing) {
+      timerRef.current = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [playing]);
+
+  // Word progression effect
+  useEffect(() => {
+    if (playing) {
+      const intervalMs = 60000 / wpm; // milliseconds per word
       intervalRef.current = setInterval(() => {
         setCurrentWordIndex((prevIndex) => {
           if (prevIndex < contentWords.length - 1) {
@@ -51,98 +65,133 @@ function SpeedReadingPage({ content, filteredExercises }) {
           } else {
             clearInterval(intervalRef.current);
             setPlaying(false);
-            setTextComplete(true); // Text is complete
+            setTextComplete(true);
             return prevIndex;
           }
         });
-      }, 60000 / (speed * 300)); // Calculate interval based on speed
+      }, intervalMs);
+    } else {
+      clearInterval(intervalRef.current);
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [playing, speed, contentWords]);
+  }, [playing, wpm, contentWords]);
 
   const calculateReadingSpeed = () => {
-    if (startTime !== null) {
-      const totalTime = (Date.now() - startTime) / 1000; // Convert to seconds
-      const wordsRead = currentWordIndex;
-      return Math.round((wordsRead / totalTime) * 60); // Calculate words per minute (wpm)
+    if (elapsedTime > 0) {
+      return Math.round((currentWordIndex / elapsedTime) * 60);
     }
-    return 0; // If start time is null, reading speed is 0
+    return 0;
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   const handleNext = () => {
-    // Navigate to the comprehension page
     navigate('/comprehension', { state: { exercisedata: filteredExercises[0], readingSpeed: calculateReadingSpeed() } });
   };
 
   const handleAnother = () => {
-    // Navigate to the exercise page
     navigate('/general-exercise');
-  }
+  };
+
   return (
-    <Box css={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <Box className='text-center'>
-        <Heading size="2" className="text-4xl border border-gray-300 rounded-md p-12">
-          {contentWords[currentWordIndex]}
-        </Heading>
-      </Box>
-      <Box className='text-center mt-2'>
-        <Button
-          onClick={handlePlayPause}
-          className={`inline-flex items-center justify-center px-4 py-2 mr-2 rounded-md focus:outline-none ${
-            playing ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-          }`}
-        >
-          {playing ? <IoPause /> : <IoPlay />}
-          <span className="ml-2">{playing ? 'Pause' : 'Play'}</span>
-        </Button>
-        <Button
-          onClick={() => handleSpeedChange(speed * 0.5)}
-          className="inline-flex items-center justify-center px-4 py-2 mr-2 rounded-md bg-blue-500 text-white focus:outline-none"
-        >
-          0.5x
-        </Button>
-        <Button
-          onClick={() => handleSpeedChange(speed * 2)}
-          className="inline-flex items-center justify-center px-4 py-2 mr-2 rounded-md bg-blue-500 text-white focus:outline-none"
-        >
-          2x
-        </Button>
-        <Button
-          onClick={() => handleSpeedChange(speed * 3)}
-          className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-blue-500 text-white focus:outline-none"
-        >
-          3x
-        </Button>
-        <Button
-          onClick={handleReplay}
-          className="inline-flex items-center justify-center px-4 py-2 ml-2 rounded-md bg-gray-500 text-white focus:outline-none"
-        >
-          Replay
-        </Button>
-        {filteredExercises && textComplete && (
-          <Button
-            onClick={handleNext}
-            className="inline-flex items-center justify-center px-4 py-2 ml-2 rounded-md bg-blue-500 text-white focus:outline-none"
+    <div className="space-y-6">
+      {/* WPM Slider Control */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center space-x-4 flex-1">
+            <Text className="text-sm font-medium whitespace-nowrap">Speed:</Text>
+            <input
+              type="range"
+              min="50"
+              max="600"
+              step="10"
+              value={wpm}
+              onChange={(e) => setWpm(parseInt(e.target.value))}
+              className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              disabled={playing}
+            />
+            <Badge color="blue" size="2" className="min-w-[80px] text-center">
+              {wpm} WPM
+            </Badge>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Badge color="gray" size="2">
+              {currentWordIndex + 1} / {contentWords.length}
+            </Badge>
+            <Badge color="green" size="2">
+              {formatTime(elapsedTime)}
+            </Badge>
+          </div>
+        </div>
+      </Card>
+
+      {/* Word Display */}
+      <Card className="p-8">
+        <div className="text-center py-12">
+          <Heading 
+            size="9" 
+            className="transition-all duration-100"
+            style={{ minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            Next
-          </Button>
-        )}
-        {!filteredExercises && textComplete && (
+            {contentWords[currentWordIndex] || '...'}
+          </Heading>
+        </div>
+      </Card>
+
+      {/* Controls */}
+      <Card className="p-4">
+        <div className="flex justify-center items-center gap-4 flex-wrap">
           <Button
-            onClick={handleAnother}
-            className="inline-flex items-center justify-center px-4 py-2 ml-2 rounded-md bg-blue-500 text-white focus:outline-none"
+            onClick={handlePlayPause}
+            className="cursor-pointer"
+            variant="solid"
+            color={playing ? 'red' : 'green'}
+            size="3"
           >
-            Practice Compelete - Try Another Exercise
+            {playing ? <IoPause size={20} /> : <IoPlay size={20} />}
+            <span className="ml-2">{playing ? 'Pause' : (currentWordIndex > 0 && !textComplete ? 'Resume' : 'Start')}</span>
           </Button>
-        )}
-      </Box>
-      <Box className='text-center mt-2'>
-        <Heading size="3" className="text-lg">
-          Reading Speed: {calculateReadingSpeed()} words per minute
-        </Heading>
-      </Box>
-    </Box>
+          
+          <Button
+            onClick={handleReplay}
+            variant="outline"
+            className="cursor-pointer"
+            size="3"
+          >
+            Replay
+          </Button>
+
+          {filteredExercises && textComplete && (
+            <Button
+              onClick={handleNext}
+              className="cursor-pointer"
+              variant="solid"
+              color="blue"
+              size="3"
+            >
+              Next: Comprehension <FaRegArrowAltCircleRight className="ml-2" />
+            </Button>
+          )}
+
+          {!filteredExercises && textComplete && (
+            <Button
+              onClick={handleAnother}
+              className="cursor-pointer"
+              variant="solid"
+              color="blue"
+              size="3"
+            >
+              Try Another Exercise
+            </Button>
+          )}
+        </div>
+      </Card>
+    </div>
   );
 }
 

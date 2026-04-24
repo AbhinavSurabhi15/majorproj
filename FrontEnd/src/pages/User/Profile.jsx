@@ -23,13 +23,18 @@ import UserProgressChart from './UserProgressChart.jsx';
 
 function Profile() {
   const loggedIn = getLoggedIn();
-
+  const [OtpStatus , setOtpStatus] = useState("Sending OTP...");
+  const [Otp, setOtp] = useState(null);
+  const {user} = getUserData() || {};
+  const userEmail = user?.userEmail;
+  const userName = user?.userName;
 
 const [userDetails, setUserDetails] = useState(null);
 const [filterResults, setFilterResults] = useState(null);
 const [loading, setLoading] = useState(true);
 
 const usersalldata = async ()=>{
+  if (!userEmail) return;
   console.log(user);
   // user data from this api /user/getAllDetails
  const response = await axios.post('http://localhost:8080/user/getAllDetails', {email: userEmail})
@@ -57,19 +62,16 @@ const filterResultsByLevel = (event) => {
 
   useEffect(() => {
     if (!loggedIn) {
-      return <Navigate to="/login" />;
-     
-
+      return;
     }
     usersalldata();
 
-  }, []);
+  }, [loggedIn, userEmail]);
 
-
-  const [OtpStatus , setOtpStatus] = useState("Sending OTP...");
-  const [Otp, setOtp] = useState(null);
-  const {user} = getUserData();
-  const {userEmail, userName} = user;
+  // Redirect if not logged in
+  if (!loggedIn) {
+    return <Navigate to="/login" />;
+  }
   
   const results = userDetails?.result;
 

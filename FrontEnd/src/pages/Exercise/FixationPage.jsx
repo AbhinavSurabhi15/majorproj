@@ -1,44 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Card, Heading, Text } from '@radix-ui/themes';
 import { IoPlayCircleOutline, IoPauseCircleOutline } from 'react-icons/io5';
-import { FiChevronRight, FiSettings } from 'react-icons/fi';
+import { FaRegArrowAltCircleRight } from 'react-icons/fa';
 import Breadcrumbs from '../../components/Breadcrumb';
 import { IoHomeOutline } from 'react-icons/io5';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
+
+// Color mapping for highlight
+const colorStyles = {
+  green: { background: '#dcfce7', color: '#166534' },
+  blue: { background: '#dbeafe', color: '#1e40af' },
+  purple: { background: '#f3e8ff', color: '#7e22ce' },
+};
 
 function FixationExercise() {
   const location = useLocation();
-  const [exercise, setExercise] = useState([]);
+  const maxAge = location.state?.maxAge || 18;
+  const [exercise, setExercise] = useState(null);
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(300); // Default speed in milliseconds
-  const [highlightColor, setHighlightColor] = useState('green'); // Default highlight color
+  const [speed, setSpeed] = useState(300);
+  const [highlightColor, setHighlightColor] = useState('green');
+  const [loading, setLoading] = useState(true);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [readingSpeed, setReadingSpeed] = useState(null);
 
   // Fetch exercise data based on location state
   useEffect(() => {
     const fetchExerciseByAge = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8080/exercise/getByAge/${location.state.maxAge}`);
-        setExercise(response.data);
+        const response = await axios.get(`http://localhost:8080/exercise/getByAge/${maxAge}`);
+        setExercise(response.data[0]);
         toast.success('Exercise fetched successfully!');
       } catch (error) {
         console.error(error);
+        toast.error('Failed to fetch exercise');
+      } finally {
+        setLoading(false);
       }
     };
     fetchExerciseByAge();
-  }, [location.state.maxAge]);
+  }, [maxAge]);
 
   // Extract sample text from exercise data
   useEffect(() => {
-    const sampleText = exercise[0]?.content?.text;
+    const sampleText = exercise?.content?.text;
     if (sampleText) setWords(sampleText.split(' '));
   }, [exercise]);
 
   // Function to start or pause the exercise
   const handlePlayPause = () => {
+    if (!hasStarted) setHasStarted(true);
     setIsPlaying(!isPlaying);
   };
 
@@ -52,38 +70,82 @@ function FixationExercise() {
     setHighlightColor(newColor);
   };
 
+  // Function to reset
+  const handleReset = () => {
+    setCurrentIndex(0);
+    setIsPlaying(false);
+    setHasStarted(false);
+    setIsComplete(false);
+    setTimer(0);
+    setReadingSpeed(null);
+  };
+
   // Function to move to the next word
   const nextWord = () => {
     if (currentIndex < words.length - 1) {
       setCurrentIndex((prevIndex) => prevIndex + 1);
     } else {
-      setIsPlaying(false); // Stop playing when reached the end of text
+      setIsPlaying(false);
+      setIsComplete(true);
+      // Calculate reading speed (words per minute)
+      const wpm = Math.round((words.length / timer) * 60);
+      setReadingSpeed(wpm);
+      toast.success('Exercise completed!');
     }
   };
+
+  // Timer effect
+  useEffect(() => {
+    let intervalId;
+    if (isPlaying) {
+      intervalId = setInterval(() => {
+        setTimer((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isPlaying]);
 
   // Start/stop interval for word highlighting
   useEffect(() => {
     let intervalId;
     if (isPlaying) {
       intervalId = setInterval(nextWord, speed);
-    } else {
-      clearInterval(intervalId);
     }
     return () => clearInterval(intervalId);
   }, [isPlaying, currentIndex, speed]);
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
   // Construct the text with highlighted current word
   const constructText = () => {
+    if (words.length === 0) {
+      return <Text className="text-gray-400">Loading text...</Text>;
+    }
     return words.map((word, index) => {
-      if (index === currentIndex) {
-        return (
-          <Text key={index} className={`bg-${highlightColor}-100 rounded p-1 animate-pulse`}>
-            {word}
-          </Text>
-        );
-      } else {
-        return <Text key={index}>{word}</Text>;
-      }
+      const isCurrent = index === currentIndex && hasStarted;
+      return (
+        <span
+          key={index}
+          style={{
+            display: 'inline-block',
+            padding: '2px 4px',
+            margin: '2px',
+            borderRadius: '4px',
+            backgroundColor: isCurrent ? colorStyles[highlightColor].background : 'transparent',
+            color: isCurrent ? colorStyles[highlightColor].color : 'inherit',
+            fontWeight: isCurrent ? 'bold' : 'normal',
+            opacity: hasStarted ? (isCurrent ? 1 : 0.4) : 1,
+            transform: isCurrent ? 'scale(1.05)' : 'scale(1)',
+            transition: 'opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease',
+          }}
+        >
+          {word}
+        </span>
+      );
     });
   };
 
@@ -96,69 +158,126 @@ function FixationExercise() {
         ]}
         icon={IoHomeOutline}
       />
-      <Heading as="h1" className="text-3xl font-bold mb-8">
+      <Heading as="h1" className="text-3xl font-bold mb-4">
         Exercise 3: Fixation Type 2 Exercise
       </Heading>
-      <Card className="p-6 mb-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2 overflow-x-auto">
-            {/* Scrollable container for text */}
-            <div className="flex space-x-2">{constructText()}</div>
+
+      {/* Settings - moved to top */}
+      <Card className="p-4 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Speed:</span>
+              <select
+                value={speed}
+                onChange={(e) => handleSpeedChange(parseInt(e.target.value))}
+                className="border rounded px-2 py-1 text-sm"
+                disabled={isPlaying}
+              >
+                <option value={500}>Very Slow</option>
+                <option value={300}>Slow</option>
+                <option value={200}>Medium</option>
+                <option value={100}>Fast</option>
+                <option value={50}>Very Fast</option>
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Color:</span>
+              <select
+                value={highlightColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value="green">Green</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+              </select>
+            </div>
           </div>
-          {/* Play/Pause button */}
-          <Button
-            onClick={handlePlayPause}
-            className="flex items-center space-x-2"
-            variant="ghost"
-            color="blue"
-          >
-            {isPlaying ? <IoPauseCircleOutline /> : <IoPlayCircleOutline />}
-            <span>{isPlaying ? 'Pause' : 'Play'}</span>
-          </Button>
-          {/* Badge and Settings button */}
-          <div className="flex items-center space-x-2">
-            <Badge color="gray">{currentIndex + 1}/{words.length}</Badge>
-            <Button className="flex items-center space-x-1" variant="ghost" color="gray">
-              <FiSettings />
-              <span>Settings</span>
-              <FiChevronRight />
+          <Badge color="gray" size="2">
+            {hasStarted ? `${currentIndex + 1} / ${words.length}` : `${words.length} words`}
+          </Badge>
+          <Badge color="blue" size="2">
+            Time: {formatTime(timer)}
+          </Badge>
+        </div>
+      </Card>
+      
+      {loading ? (
+        <Card className="p-6 mb-4">
+          <Text className="text-gray-400">Loading exercise...</Text>
+        </Card>
+      ) : isComplete ? (
+        <Card className="p-6 mb-4">
+          <div className="text-center py-8">
+            <Heading as="h2" className="text-2xl font-bold mb-4 text-green-600">
+              🎉 Exercise Complete!
+            </Heading>
+            <div className="mb-6 space-y-2">
+              <Text className="block text-lg">
+                <strong>Words Read:</strong> {words.length}
+              </Text>
+              <Text className="block text-lg">
+                <strong>Time Taken:</strong> {formatTime(timer)}
+              </Text>
+              <Text className="block text-lg">
+                <strong>Reading Speed:</strong> {readingSpeed} WPM
+              </Text>
+            </div>
+            <div className="flex justify-center gap-4">
+              <Button 
+                onClick={handleReset}
+                variant="outline" 
+                className="cursor-pointer"
+                size="3"
+              >
+                Try Again
+              </Button>
+              <Link to="/comprehension" state={{ exercisedata: exercise, readingSpeed: readingSpeed }}>
+                <Button className="cursor-pointer" variant="solid" color="blue" size="3">
+                  Next: Comprehension <FaRegArrowAltCircleRight className="ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-6 mb-4">
+          {/* Controls - at top */}
+          <div className="flex justify-center items-center gap-4 pb-4 mb-4 border-b">
+            <Button
+              onClick={handlePlayPause}
+              className="cursor-pointer"
+              variant="solid"
+              color="blue"
+              size="3"
+            >
+              {isPlaying ? <IoPauseCircleOutline size={20} /> : <IoPlayCircleOutline size={20} />}
+              <span className="ml-2">{isPlaying ? 'Pause' : (hasStarted ? 'Resume' : 'Start')}</span>
+            </Button>
+            <Button 
+              onClick={handleReset}
+              variant="outline" 
+              className="cursor-pointer"
+              size="3"
+              disabled={!hasStarted}
+            >
+              Reset
             </Button>
           </div>
-        </div>
-      </Card>
 
-      <Card className="p-6">
-        <Heading as="h2" className="text-xl font-bold mb-4">
-          Settings
-        </Heading>
-        <div className="flex flex-col space-y-4">
-          <div className="flex items-center space-x-2">
-            <span>Speed:</span>
-            <select
-              value={speed}
-              onChange={(e) => handleSpeedChange(parseInt(e.target.value))}
-              className="border rounded p-2"
-            >
-              <option value={300}>Slow</option>
-              <option value={200}>Medium</option>
-              <option value={100}>Fast</option>
-            </select>
+          {/* Text display area */}
+          <div 
+            className="text-lg" 
+            style={{ 
+              lineHeight: '2.2',
+              minHeight: '200px',
+            }}
+          >
+            {constructText()}
           </div>
-          <div className="flex items-center space-x-2">
-            <span>Highlight Color:</span>
-            <select
-              value={highlightColor}
-              onChange={(e) => handleColorChange(e.target.value)}
-              className="border rounded p-2"
-            >
-              <option value="green">Green</option>
-              <option value="blue">Blue</option>
-              <option value="purple">Purple</option>
-            </select>
-          </div>
-          {/* Add additional settings components here */}
-        </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 }

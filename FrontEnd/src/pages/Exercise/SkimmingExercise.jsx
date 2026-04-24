@@ -1,152 +1,175 @@
-import React, { useState } from 'react';
-import { Button, Dialog, Heading, Text, Flex, Badge, Card , Callout} from '@radix-ui/themes';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, Heading, Text, Badge, Card, Callout } from '@radix-ui/themes';
 import Breadcrumbs from '../../components/Breadcrumb';
 import { IoHomeOutline } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
-import professionalImage from '/img/skimming/img1.jpg'; // Import the professional image here
+import { Link, useLocation } from 'react-router-dom';
+import professionalImage from '/img/skimming/img1.jpg';
 import { FaRegArrowAltCircleRight } from "react-icons/fa";
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-
 function SkimmingExercise() {
-  const [showContent, setShowContent] = useState(false);
-  const [showImage, setShowImage] = useState(true);
-  const [timer, setTimer] = useState(10); // Timer for 10 seconds
-  const [exercise, setExercise] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const calculateReadingSpeed = () => {
-    // Professional formula to calculate reading speed
-    const readingSpeed = Math.round(200 / 1); // 200 words per minute
-    return readingSpeed;
-  };
+  const location = useLocation();
+  const maxAge = location.state?.maxAge || 18;
   
+  const [phase, setPhase] = useState('ready'); // 'ready', 'skimming', 'complete'
+  const [timer, setTimer] = useState(5);
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const timerRef = useRef(null);
 
-  const getAllSkimmingExercise = async () => {
-    const url = 'http://localhost:8080/exercise/getByName/Skimming';
-    try {
-      setLoading(true);
-      const response = await axios.get(url);
-      console.log(response.data);
-      setExercise(response.data);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      console.error(error);
-      toast.error('Unable to fetch data!');
-    }
-  };
-
+  // Fetch exercise on mount
   useEffect(() => {
-    getAllSkimmingExercise();
-  }, []);
+    const fetchExercise = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:8080/exercise/getByAge/${maxAge}`);
+        setExercise(response.data[0]);
+        toast.success('Exercise loaded!');
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to load exercise');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExercise();
+  }, [maxAge]);
 
   const handleStartSkimming = () => {
-    setShowImage(true);
-    setShowContent(false);
-    setTimer(10); // Reset timer to 10 seconds
-    // Start the countdown timer
-    const countdown = setInterval(() => {
-      setTimer((prevTimer) => {
-        if (prevTimer === 1) {
-          clearInterval(countdown);
-          setShowImage(false);
-          setShowContent(true);
+    setPhase('skimming');
+    setTimer(5);
+    
+    timerRef.current = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          setPhase('complete');
+          toast.success('Time\'s up! Now answer the questions.');
+          return 0;
         }
-        if (prevTimer === 0) {
-          clearInterval(countdown);
-          setShowImage(false);
-          setShowContent(false);
-        }
-        return prevTimer - 1;
+        return prev - 1;
       });
     }, 1000);
   };
+
+  const handleReset = () => {
+    clearInterval(timerRef.current);
+    setPhase('ready');
+    setTimer(5);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
-          { label: 'Skimming Exercise', href: '/skimming' },
+          { label: 'Exercise 4: Skimming', href: '/skimming' },
         ]}
         icon={IoHomeOutline}
       />
-      <Heading as="h1" className="text-3xl font-bold mb-8">
-        Skimming Exercise
+      <Heading as="h1" className="text-3xl font-bold mb-4">
+        Exercise 4: Skimming
       </Heading>
-      <Callout.Root>
+      
+      <Callout.Root className="mb-4">
         <Callout.Icon>
-            <InfoCircledIcon />
+          <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-            Skim through the image that will be shown for 10 seconds. Try to get a general idea of its content.
-            After 10 seconds, a comprehension question related to the image will be asked.
+          <strong>Skimming</strong> is quickly glancing through text to get the main idea without reading every word.
+          You'll have <strong>5 seconds</strong> to read the text, then answer comprehension questions.
         </Callout.Text>
-        </Callout.Root>
+      </Callout.Root>
 
-<Card className="p-6 mb-8 mt-4">
-      <Dialog.Root>
-        <Dialog.Trigger>
-          <Button color='blue' variant='soft'>Show Instructions</Button>
-        </Dialog.Trigger>
-
-        <Dialog.Content>
-          <Heading as="h2" className="text-lg font-bold mb-4">
-            Instructions
-          </Heading>
-          <Text size="2" mb="4">
-           1. Skim through the image that will be shown for 10 seconds.  <br />
-           2. Try to get a general idea of its content. <br />
-           3. After 10 seconds, a comprehension question related to the image will be asked.
-          </Text>
-
-          <Flex gap="3" mt="4" justify="end">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                Close
-              </Button>
-            </Dialog.Close>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
-
-      {showImage &&(
-        <Dialog.Root>
-             <Dialog.Trigger>
-          <Button onClick={handleStartSkimming} variant="outline" color="cyan" className="mr-2">Start Skimming</Button>
-        </Dialog.Trigger>
-          <Dialog.Content>
-            <div className=" p-6 mb-8 border border-gray-300 rounded-lg">
-              <Badge size="3" color="gray" variant="outline" align={"center"}>
-                <Heading as="h6" >Time remaining: {timer} seconds</Heading>
-              </Badge>
-                <Heading as="h2" className="flex justify-center text-lg font-bold mb-4">
-                    Skim through the image below
-                </Heading>
-                <div className="flex justify-center">
-              <img src={professionalImage} alt="Professional Image" style={{ maxWidth: '50%' }} />
-              </div>
+      {loading ? (
+        <Card className="p-8 text-center">
+          <Text className="text-gray-400">Loading exercise...</Text>
+        </Card>
+      ) : phase === 'ready' ? (
+        <Card className="p-8">
+          <div className="text-center space-y-6">
+            <Heading as="h2" className="text-xl">Ready to Start?</Heading>
+            <Text className="block text-gray-600">
+              A text passage will appear for 5 seconds. Try to quickly identify the main topic and key points.
+              Don't try to read every word - just skim!
+            </Text>
+            <div className="space-y-2">
+              <Text className="block text-sm text-gray-500">Tips for skimming:</Text>
+              <ul className="text-sm text-gray-500 text-left max-w-md mx-auto">
+                <li>• Look at the first and last sentences</li>
+                <li>• Notice bold or emphasized words</li>
+                <li>• Get the general idea, not details</li>
+              </ul>
             </div>
-          </Dialog.Content>
-        </Dialog.Root>
+            <Button 
+              onClick={handleStartSkimming} 
+              size="4" 
+              color="blue"
+              className="cursor-pointer"
+            >
+              Start Skimming
+            </Button>
+          </div>
+        </Card>
+      ) : phase === 'skimming' ? (
+        <Card className="p-6">
+          {/* Timer bar */}
+          <div className="mb-4 flex justify-between items-center">
+            <Badge color={timer <= 2 ? 'red' : 'blue'} size="3">
+              ⏱️ {timer} seconds remaining
+            </Badge>
+            <div 
+              className="h-2 bg-gray-200 rounded-full flex-1 mx-4 overflow-hidden"
+            >
+              <div 
+                className={`h-full transition-all duration-1000 ease-linear ${timer <= 2 ? 'bg-red-500' : 'bg-blue-500'}`}
+                style={{ width: `${(timer / 5) * 100}%` }}
+              />
+            </div>
+          </div>
+          
+          {/* Text content */}
+          <div className="p-4 bg-gray-50 rounded-lg border">
+            <Text className="text-lg leading-relaxed">
+              {exercise?.content?.text || 'Loading content...'}
+            </Text>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-8">
+          <div className="text-center space-y-6">
+            <div className="text-6xl">✅</div>
+            <Heading as="h2" className="text-xl text-green-600">Time's Up!</Heading>
+            <Text className="block text-gray-600">
+              Now let's see how much you remember. Click below to answer the comprehension questions.
+            </Text>
+            <div className="flex justify-center gap-4">
+              <Button 
+                onClick={handleReset}
+                variant="outline" 
+                className="cursor-pointer"
+              >
+                Try Again
+              </Button>
+              <Link to="/comprehension" state={{ exercisedata: exercise, readingSpeed: 200 }}>
+                <Button color="blue" className="cursor-pointer">
+                  Comprehension Questions <FaRegArrowAltCircleRight className="ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
       )}
-
-
-      {showContent && (
-       
-         <Link to="/comprehension" state={{ exercisedata: exercise, readingSpeed: calculateReadingSpeed() }}>
-         <Button className="mr-2">
-         Next  <FaRegArrowAltCircleRight />
-         </Button>
-       </Link>
-      )}
-    </Card>
     </div>
-
   );
 }
 
