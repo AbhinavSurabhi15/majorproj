@@ -5,10 +5,10 @@ import {InfoCircledIcon} from '@radix-ui/react-icons'
 function ForgetPassword() {
   return (
     <div className="flex justify-center items-center mt-8">
-      <Box className="max-w-sm w-full px-6 py-8 rounded-lg" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
+      <Box className="max-w-sm w-full px-6 py-8 rounded-lg bg-white dark:bg-gray-800" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
         <div className="text-center">
           <Heading as="h2">Forgot Your Password?</Heading>
-          <p className="mt-2 text-sm text-gray-500 mb-4">Don't worry, it happens to the best of us!</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 mb-4">Don't worry, it happens to the best of us!</p>
         </div>
         <Callout.Root>
   <Callout.Icon>
@@ -20,12 +20,12 @@ function ForgetPassword() {
 </Callout.Root>
         <form className="mt-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Email Address
             </label>
             <input
               type="email"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="email"
               placeholder="Enter your email"
               autoComplete="off"

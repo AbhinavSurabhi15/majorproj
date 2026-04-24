@@ -4,19 +4,19 @@ import { Box, Button, Heading } from '@radix-ui/themes';
 function ChangePassword() {
   return (
     <div className="flex justify-center items-center mt-8">
-      <Box className="max-w-sm w-full px-6 py-8 rounded-lg" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
+      <Box className="max-w-sm w-full px-6 py-8 rounded-lg bg-white dark:bg-gray-800" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
         <div className="text-center">
           <Heading as="h2">Change Password</Heading>
-          <p className="mt-2 text-sm text-gray-500">Please enter your current password and your new password below.</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Please enter your current password and your new password below.</p>
         </div>
         <form className="mt-6">
           <div>
-            <label htmlFor="current-password" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="current-password" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Current Password
             </label>
             <input
               type="password"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="current-password"
               placeholder="Enter your current password"
               autoComplete="off"
@@ -24,12 +24,12 @@ function ChangePassword() {
             />
           </div>
           <div className="mt-4">
-            <label htmlFor="new-password" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="new-password" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               New Password
             </label>
             <input
               type="password"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="new-password"
               placeholder="Enter your new password"
               autoComplete="off"
@@ -37,12 +37,12 @@ function ChangePassword() {
             />
           </div>
           <div className="mt-4">
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Confirm New Password
             </label>
             <input
               type="password"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="confirm-password"
               placeholder="Confirm your new password"
               autoComplete="off"

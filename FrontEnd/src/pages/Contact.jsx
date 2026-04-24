@@ -26,21 +26,21 @@ const ContactUs = () => {
         <Box as="form" onSubmit={handleSubmit}>
           {/* Name Input */}
           <div className="mb-4">
-            <label htmlFor="name" className="block mb-1">Your Name</label>
-            <input type="text" id="name" name="name" className="w-full px-3 py-2 border rounded-md" placeholder='Enter your name' />
+            <label htmlFor="name" className="block mb-1 text-gray-700 dark:text-gray-300">Your Name</label>
+            <input type="text" id="name" name="name" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder='Enter your name' />
           </div>
           {/* Email Input */}
           <div className="mb-4">
-            <label htmlFor="email" className="block mb-1">Your Email</label>
-            <input type="email" id="email" name="email" className="w-full px-3 py-2 border rounded-md" placeholder='Enter your email'/>
+            <label htmlFor="email" className="block mb-1 text-gray-700 dark:text-gray-300">Your Email</label>
+            <input type="email" id="email" name="email" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder='Enter your email'/>
           </div>
           {/* Message Textarea */}
           <div className="mb-4">
-            <label htmlFor="message" className="block mb-1">Your Message</label>
-            <textarea id="message" placeholder='Describe your query/feedback here' name="message" rows="5" className="w-full px-3 py-2 border rounded-md"></textarea>
+            <label htmlFor="message" className="block mb-1 text-gray-700 dark:text-gray-300">Your Message</label>
+            <textarea id="message" placeholder='Describe your query/feedback here' name="message" rows="5" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
           </div>
           {/* Submit Button */}
-          <Button type="submit" className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Submit</Button>
+          <Button type="submit" color="blue" size="3" className="w-full cursor-pointer">Submit</Button>
         </Box>
       </Card>
     </div>

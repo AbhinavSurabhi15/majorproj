@@ -96,7 +96,7 @@ function VoiceReadingPage() {
 
   return (
     <div className={tw`max-w-4xl mx-auto px-4 py-8`}>
-      <Heading as="h1" className={tw`text-3xl font-bold mb-8`}>
+      <Heading as="h1" className={tw`text-3xl font-bold mb-8 text-gray-900 dark:text-white`}>
         Voice Reading Exercise
       </Heading>
       <Breadcrumbs items={Breadcrumbitems} icon={IoHomeOutline} />
@@ -108,23 +108,22 @@ function VoiceReadingPage() {
       </Callout.Root>
 
       <Card className={tw`p-6 mb-8`}>
-        <Text>
+        <Text className="text-gray-900 dark:text-gray-100">
           {originalText.split(' ').map((word, index) => (
             <span
               key={index}
-              className={tw`font-semibold`}
-              style={{
-                backgroundColor: currentWordIndex === index ? '	#8cff32' : 'transparent',
-                padding: '2px',
-                // borderRadius: '3px',
-              }}
+              className={
+                currentWordIndex === index
+                  ? 'font-semibold rounded px-1 bg-lime-200 text-gray-900 dark:bg-lime-500/40 dark:text-white'
+                  : 'font-semibold'
+              }
             >
               {word}{' '}
             </span>
           ))}
         </Text>
       </Card>
-      <div>
+      <div className="text-gray-800 dark:text-gray-200">
         <strong>Mistakes:</strong>{' '}
         {mistakes.length > 0 ? (
           <Badge color="red">{mistakes.join(', ')}</Badge>

@@ -1,66 +1,48 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-// .env file import
 import { toast } from 'react-hot-toast';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { IoHomeOutline, IoSparklesSharp } from 'react-icons/io5';
-import {Button, Heading, Skeleton, TextArea} from '@radix-ui/themes';
-import { useNavigate } from 'react-router-dom';
+import { IoHomeOutline } from 'react-icons/io5';
+import { Button, Heading, Card, Text, Callout, Badge, Flex } from '@radix-ui/themes';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Breadcrumbs from '../../components/Breadcrumb';
-import { useLocation } from 'react-router-dom';
 import { RiSpeakFill } from "react-icons/ri";
-
+import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { FaRegArrowAltCircleRight, FaRedo } from "react-icons/fa";
 
 function WordbyWord() {
-  
   const [exercise, setExercise] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const maxAgeToGrade = (maxAge) => {
-    switch (maxAge) {
-      case 8:
-        return 'grade1';
-      case 10:
-        return 'grade2';
-      case 12:
-        return 'grade3';
-      case 14:
-        return 'grade4';
-      case 16:
-        return 'grade5';
-      case 18:
-        return 'grade6';
-      default:
-        return '';
-    }
+  const location = useLocation();
+  const navigate = useNavigate();
+  const maxAge = location.state?.maxAge || 18;
+
+  const getLevelName = (age) => {
+    if (age <= 8) return 'Beginner';
+    if (age <= 10) return 'Elementary';
+    if (age <= 12) return 'Intermediate';
+    if (age <= 14) return 'Upper Intermediate';
+    if (age <= 16) return 'Advanced';
+    return 'Expert';
   };
 
-const location = useLocation();
-const maxAge = location.state?.maxAge || 18;
-const [ageGroup1, setAgeGroup1] = useState(maxAgeToGrade(maxAge));
-console.log(maxAge);
-
-// Fetch exercise on component mount
-useEffect(() => {
   const fetchExercise = async () => {
     setLoading(true);
     try {
       const response = await axios.get(`http://localhost:8080/exercise/getByAge/${maxAge}`);
-      console.log(response.data);
-      setExercise(response.data[0]); // API returns array with one random exercise
-      toast.success('Exercise fetched successfully!');
+      setExercise(response.data[0]);
+      toast.success('Exercise loaded!');
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch exercise');
+      toast.error('Failed to load exercise');
     } finally {
       setLoading(false);
     }
   };
-  fetchExercise();
-}, [maxAge]);
 
-  const navigate = useNavigate();
-  const [generatedContent, setGeneratedContent] = useState('');
+  useEffect(() => {
+    fetchExercise();
+  }, [maxAge]);
 
   const handleStartReading = () => {
     if (!exercise) {
@@ -69,64 +51,108 @@ useEffect(() => {
     }
     navigate('/start-reading', { state: { filteredExercises: [exercise] } });
   };
+
+  const wordCount = exercise?.content?.text?.split(' ').length || 0;
   
-  const breadcrumbs = [
-    { label: 'Home', href: '/' },
-    { label: 'Exercise 2: Subvocalization', href: '/exercise' },
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto mt-8 px-4">
-       <Breadcrumbs items={breadcrumbs} icon={IoHomeOutline} /> 
-       
-      <Heading size="8" className="mb-2">Exercise 2: Subvocalization <RiSpeakFill className={`ml-1 inline ${loading && "animate-ping"}  `} /></Heading>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <Breadcrumbs 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'General Exercises', href: '/general-exercise' },
+          { label: 'Subvocalization Training', href: '/subvocalization' },
+        ]} 
+        icon={IoHomeOutline} 
+      />
       
-      {/* Exercise explanation */}
-      <p className="text-gray-600 mb-4">
-        This exercise displays words <strong>one at a time</strong> to help you stop "reading aloud in your head" (subvocalization). 
-        Training at faster speeds forces your brain to process words visually, improving reading speed.
-      </p>
-
-      <div className="flex space-x-4 mb-4">
-      <select
-  value={ageGroup1}
-  onChange={(e) => setAgeGroup1(e.target.value)}
-  className="border rounded-md px-3 py-2 w-1/3 focus:outline-none disabled:opacity-50 disabled:bg-gray-200"
-  disabled
->
-  <option value="" >Select your grade</option>
-  <option value="grade1">Grade 1 (6-8 Year Old)</option>
-  <option value="grade2">Grade 2 (8-10 Year Old)</option>
-  <option value="grade3">Grade 3 (10-12 Year Old)</option>
-  <option value="grade4">Grade 4 (12-14 Year Old)</option>
-  <option value="grade5">Grade 5 (14-16 Year Old)</option>
-  <option value="grade6">Grade 6 (16-18+ Year Old)</option>
-</select>
-</div>
-
-
-      <Skeleton loading={loading}>
-
-      <TextArea
-        value={exercise?.content?.text || ''}
-        placeholder="Loading exercise content..."
-        rows={6}
-        className="w-full resize-none border rounded-md p-2 focus:outline-none"
-        readOnly
-        />
-        </Skeleton>
-      <div className='flex justify-between'>
-      <Button
-        onClick={() => setExercise(null)}
-        className="mt-4 cursor-pointer"
-      >
-        Clear
-      </Button>
-      {/* button for start reading */}
-      <Button onClick={handleStartReading} className="mt-4 cursor-pointer" disabled={!exercise}>
-          Start Reading
-        </Button>
+      <div className="mb-6">
+        <Flex align="center" gap="3" className="mb-2">
+          <Heading size="8" className="text-gray-900 dark:text-white">Subvocalization Training</Heading>
+          <RiSpeakFill className={`text-2xl ${loading ? 'animate-pulse text-blue-500' : 'text-gray-400 dark:text-gray-500'}`} />
+        </Flex>
+        <Text className="text-gray-600 dark:text-gray-400">
+          Break the habit of silently pronouncing words to dramatically increase reading speed
+        </Text>
       </div>
+
+      <Callout.Root className="mb-6">
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>
+          <strong>What is Subvocalization?</strong> It's the inner voice that "reads" words in your head. 
+          This exercise displays words one at a time at high speed, forcing your brain to process words visually 
+          without speaking them internally.
+        </Callout.Text>
+      </Callout.Root>
+
+      {/* Level indicator */}
+      <Card className="p-4 mb-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 border border-purple-100 dark:border-gray-600">
+        <Flex justify="between" align="center" wrap="wrap" gap="3">
+          <div>
+            <Text className="text-sm text-gray-500 dark:text-gray-400">Current Level</Text>
+            <Text className="font-bold text-lg block text-gray-900 dark:text-white">{getLevelName(maxAge)}</Text>
+          </div>
+          <Flex gap="3">
+            <Badge color="purple" size="2">📝 {wordCount} words</Badge>
+            <Badge color="blue" size="2">⏱️ ~{Math.ceil(wordCount / 200)} min</Badge>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {/* Exercise Preview */}
+      <Card className="p-6 mb-6">
+        <Text className="font-semibold mb-3 block text-gray-700 dark:text-gray-200">Text Preview</Text>
+        {loading ? (
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+          </div>
+        ) : (
+          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border dark:border-gray-700 max-h-48 overflow-y-auto">
+            <Text className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              {exercise?.content?.text || 'No exercise content available'}
+            </Text>
+          </div>
+        )}
+      </Card>
+
+      {/* Action Buttons */}
+      <Card className="p-4">
+        <Flex gap="3" justify="between" wrap="wrap">
+          <Button 
+            onClick={fetchExercise} 
+            variant="outline" 
+            size="3" 
+            className="cursor-pointer"
+            disabled={loading}
+          >
+            <FaRedo className="mr-2" /> Load New Text
+          </Button>
+          <Button 
+            onClick={handleStartReading} 
+            variant="solid" 
+            color="green" 
+            size="3" 
+            className="cursor-pointer"
+            disabled={!exercise || loading}
+          >
+            Start Speed Reading <FaRegArrowAltCircleRight className="ml-2" />
+          </Button>
+        </Flex>
+      </Card>
+
+      {/* Tips Card */}
+      <Card className="p-4 mt-6 bg-blue-50 dark:bg-gray-800 border border-blue-100 dark:border-gray-700">
+        <Text className="font-semibold mb-2 block text-gray-800 dark:text-gray-200">💡 Tips for Success</Text>
+        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+          <li>• Focus only on the center of the screen</li>
+          <li>• Try to visualize meanings, not sounds</li>
+          <li>• Start at a comfortable speed, then increase gradually</li>
+          <li>• Don't worry if you miss some words at first</li>
+        </ul>
+      </Card>
     </div>
   );
 }

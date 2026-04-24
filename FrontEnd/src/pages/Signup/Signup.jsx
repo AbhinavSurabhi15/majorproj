@@ -68,10 +68,10 @@ function Signup() {
 
   return (
     <div className="flex justify-center items-center mt-8 mb-4">
-      <Box className="max-w-sm w-full px-6 py-6 rounded-lg" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
+      <Box className="max-w-sm w-full px-6 py-6 rounded-lg bg-white dark:bg-gray-800" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
         <div className="text-center mb-4">
           <Heading as='h2'>Create an account</Heading>
-          <p className="mt-2 text-sm text-gray-500">Sign up to get started</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Sign up to get started</p>
         </div>
        
         <div className="mb-4 text-center space-y-2 ml-3">
@@ -87,18 +87,19 @@ function Signup() {
 
 
         <div className="flex items-center justify-center mb-4 space-x-4">
-          <div className="border-t border-gray-300 flex-grow"></div>
-          <span className="text-gray-500">Sign Up</span>
-          <div className="border-t border-gray-300 flex-grow"></div>
+          <div className="border-t border-gray-300 dark:border-gray-600 flex-grow"></div>
+          <span className="text-gray-500 dark:text-gray-400">Sign Up</span>
+          <div className="border-t border-gray-300 dark:border-gray-600 flex-grow"></div>
         </div>
         <form>
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Name
             </label>
             <input
               type="text"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="name"
               placeholder="Enter your name"
               autoComplete="name"
@@ -108,12 +109,12 @@ function Signup() {
             />
           </div>
           <div className="mt-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Email Address
             </label>
             <input
               type="email"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="email"
               placeholder="Enter your email"
               autoComplete="email"
@@ -123,12 +124,12 @@ function Signup() {
             />
           </div>
           <div className="mt-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Password
             </label>
             <input
               type="password"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="password"
               placeholder="Enter your password"
               autoComplete="new-password"
@@ -142,7 +143,7 @@ function Signup() {
               Continue to Create Account {loading? <Spinner /> : ''}
             </Button>
           </div>
-          <p className="mt-4 text-sm text-gray-600 text-center">
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
             By signing up, you agree to our <a href="#" className="font-medium text-blue-500 hover:underline">terms of service</a> and <a href="#" className="font-medium text-blue-500 hover:underline">privacy policy</a>.
           </p>
         </form>

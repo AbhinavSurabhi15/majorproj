@@ -1,144 +1,292 @@
 
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Heading, Flex, Badge, Callout } from '@radix-ui/themes';
+import { Button, Card, Heading, Flex, Badge, Text } from '@radix-ui/themes';
 import Breadcrumbs from '../../components/Breadcrumb';
-import { IoHomeOutline } from 'react-icons/io5';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaSave } from 'react-icons/fa';
+import { IoHomeOutline, IoSpeedometer, IoTrophy, IoRocket, IoRefreshOutline } from 'react-icons/io5';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { FaSave, FaBrain, FaChartLine, FaMedal, FaStar } from 'react-icons/fa';
 import axios from 'axios';
 import ConfettiExplosion from 'react-confetti-explosion';
-import { MdSportsScore } from "react-icons/md";
-import { IoSpeedometer } from "react-icons/io5";
 import { getUserData } from '../../services/authService';
-import { useLocation } from 'react-router-dom'; // Import useLocation from react-router-dom
 import { toast } from 'react-hot-toast';
 
 function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState(null);
-  console.log('State:', state);
-  // const [userId, setUserId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(true);
+  
   const userdata = getUserData();
-  const percentageCorrect = state?.percentageCorrect;
-  const readingSpeed = state?.readingSpeed;
+  const percentageCorrect = state?.percentageCorrect || 0;
+  const readingSpeed = state?.readingSpeed || 0;
   const exercisedata = state?.exercisedata;
-
   const userEmail = userdata?.user?.userEmail;
-  // setUserId(userdata?.user?.userEmail);
-  // cons
-  const usersalldata = async ()=>{
-    // console.log(user);
-    // user data from this api /user/getAllDetails
-   const response = await axios.post('http://localhost:8080/user/getAllDetails', {email: userEmail})
-    console.log(response.data);
-    setUserDetails(response.data);
-  
-  
-  }
- useEffect(()=>{
 
-  usersalldata();
-  },[])
+  const usersalldata = async () => {
+    try {
+      const response = await axios.post('http://localhost:8080/user/getAllDetails', { email: userEmail });
+      setUserDetails(response.data);
+    } catch (error) {
+      console.error('Failed to fetch user details:', error);
+    }
+  };
 
+  useEffect(() => {
+    if (userEmail) usersalldata();
+    // Hide confetti after a few seconds
+    const timer = setTimeout(() => setShowConfetti(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const userId = userDetails?._id;
-
-
-    console.log('User ID:', userDetails);
-
-
-
+  const userId = userDetails?._id;
   const speed = readingSpeed;
   const comprehensionPercentage = percentageCorrect;
 
   // Calculate score based on comprehension percentage and reading speed
   const calculateScore = () => {
-    // Professional formula to calculate score
-    const score = Math.round((speed * comprehensionPercentage) / 100);
-    return score;
-  
+    return Math.round((speed * comprehensionPercentage) / 100);
   };
 
   const score = calculateScore();
 
-  const handleResult = async (userId) => {
+  // Get performance rating
+  const getPerformance = () => {
+    if (score >= 300) return { label: 'Outstanding!', emoji: '🏆', color: 'purple', stars: 5 };
+    if (score >= 200) return { label: 'Excellent!', emoji: '🌟', color: 'green', stars: 4 };
+    if (score >= 150) return { label: 'Great Job!', emoji: '👏', color: 'blue', stars: 3 };
+    if (score >= 100) return { label: 'Good Work!', emoji: '👍', color: 'orange', stars: 2 };
+    return { label: 'Keep Practicing!', emoji: '💪', color: 'gray', stars: 1 };
+  };
+
+  const getSpeedRating = () => {
+    if (speed >= 400) return { label: 'Speed Reader', color: 'purple' };
+    if (speed >= 300) return { label: 'Fast', color: 'green' };
+    if (speed >= 200) return { label: 'Average', color: 'blue' };
+    if (speed >= 150) return { label: 'Below Average', color: 'orange' };
+    return { label: 'Slow', color: 'gray' };
+  };
+
+  const getComprehensionRating = () => {
+    if (comprehensionPercentage >= 90) return { label: 'Perfect', color: 'green' };
+    if (comprehensionPercentage >= 70) return { label: 'Good', color: 'blue' };
+    if (comprehensionPercentage >= 50) return { label: 'Fair', color: 'orange' };
+    return { label: 'Needs Work', color: 'red' };
+  };
+
+  const performance = getPerformance();
+  const speedRating = getSpeedRating();
+  const compRating = getComprehensionRating();
+
+  const handleResult = async () => {
+    if (!userId || !exercisedata?._id) {
+      toast.error('Please login to save your result');
+      return;
+    }
     
-    // Save the result to the database
-    // need userId, exerciseId, score, wpm 
+    setSaving(true);
     try {
-   
-      const exercise = exercisedata._id;
-      const response = await axios.post('http://localhost:8080/user/result/create', {
+      await axios.post('http://localhost:8080/user/result/create', {
         userId: userId,
-        exerciseId: exercise,
+        exerciseId: exercisedata._id,
         score: score,
         wpm: speed,
       });
-      console.log(response.data);
-      // Show a success message
       toast.success('Result saved successfully!');
-      // Redirect to the home page
       navigate('/general-exercise');
-      
     } catch (error) {
       console.error(error);
-      // Show an error message
-      toast.error('An error occurred while saving the result. Please try again.');
+      toast.error('Failed to save result. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {showConfetti && score >= 100 && (
+        <ConfettiExplosion 
+          numberOfPieces={300} 
+          duration={4000} 
+          force={0.8} 
+          width={1600}
+        />
+      )}
+      
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
-          { label: 'Exercise 1', href: '/general-exercise' },
+          { label: 'General Exercises', href: '/general-exercise' },
           { label: 'Result' },
         ]}
         icon={IoHomeOutline}
       />
-      <Heading as="h1" className="text-3xl font-bold mb-8">
-        Result
-      </Heading>
-        <Callout.Root className="mb-4">
-          <Callout.Icon>
-            <IoSpeedometer className="text-2xl" />
-          </Callout.Icon>
-          <Callout.Text>
-  
-              Your reading speed is the number of words you can read in a minute. The average adult reading speed is 200-250 words per minute.
-        
-          </Callout.Text>
-        </Callout.Root>
-       
-      <Card className="p-6 mb-8">
-        {speed >= 100 && <ConfettiExplosion numberOfPieces={200} duration={5400} force={0.8} width={1600}/>}
-        <Heading as="h2" className="text-xl font-bold mb-4">
-         Your Score <MdSportsScore className='inline' /> : <span className="text-green-500">+{score} Score Points</span> 
+
+      {/* Hero Section */}
+      <div className="text-center mb-8">
+        <div className="text-7xl mb-4">{performance.emoji}</div>
+        <Heading as="h1" className="text-4xl font-bold mb-2">
+          {performance.label}
         </Heading>
-        <Flex direction="column" gap="2" className="mb-4">
-          <Heading as="h3" className="text-lg font-bold">
-            Reading Speed : {speed} WPM (words per minute)
-          </Heading>
-          <Heading as="h3" className="text-lg font-bold">
-            Comprehension Percentage: <Badge size={"3"}> {comprehensionPercentage}% </Badge>
-          </Heading>
-        </Flex>
-        {/* Display ConfettiExplosion if the user has completed the exercise */}
+        <div className="flex justify-center gap-1 mb-2">
+          {[...Array(5)].map((_, i) => (
+            <FaStar 
+              key={i} 
+              className={`text-2xl ${i < performance.stars ? 'text-yellow-400' : 'text-gray-300'}`}
+            />
+          ))}
+        </div>
+        <Text className="text-gray-600 dark:text-gray-400">Exercise completed successfully</Text>
+      </div>
+
+      {/* Main Score Card */}
+      <Card className="p-8 mb-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 border-2 border-indigo-100 dark:border-gray-600">
+        <div className="text-center">
+          <Text className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Total Score</Text>
+          <div className="flex items-center justify-center gap-2 my-2">
+            <IoTrophy className="text-4xl text-yellow-500" />
+            <span className="text-6xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {score}
+            </span>
+          </div>
+          <Badge color={performance.color} size="2">points earned</Badge>
+        </div>
       </Card>
 
-      {/* Navigation buttons */}
-      <Flex gap="4" justify="center" alignItems="center">
-        <Link to="/" className="flex items-center">
-          <Button className="mr-2">
-            <IoHomeOutline className="mr-1" /> Home
-          </Button>
-        </Link>
-        <Button onClick={() => handleResult(userId)}>
-  <FaSave className="mr-1" /> Save Result & Continue
-</Button>
-      </Flex>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* Reading Speed Card */}
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-700 border border-blue-100 dark:border-gray-600">
+          <Flex align="center" gap="4">
+            <div className="p-4 rounded-xl bg-blue-100 dark:bg-blue-900/40">
+              <IoSpeedometer className="text-3xl text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <Text className="text-sm text-gray-500 dark:text-gray-400 block">Reading Speed</Text>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-blue-700 dark:text-blue-400">{speed}</span>
+                <span className="text-gray-500 dark:text-gray-400">WPM</span>
+              </div>
+              <Badge color={speedRating.color} size="1">{speedRating.label}</Badge>
+            </div>
+          </Flex>
+          <div className="mt-4">
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <span>0</span>
+              <span>200 (avg)</span>
+              <span>400+</span>
+            </div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-1000"
+                style={{ width: `${Math.min((speed / 400) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Comprehension Card */}
+        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-100 dark:border-gray-600">
+          <Flex align="center" gap="4">
+            <div className="p-4 rounded-xl bg-green-100 dark:bg-green-900/40">
+              <FaBrain className="text-3xl text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1">
+              <Text className="text-sm text-gray-500 dark:text-gray-400 block">Comprehension</Text>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-green-700 dark:text-green-400">{comprehensionPercentage.toFixed(0)}</span>
+                <span className="text-gray-500 dark:text-gray-400">%</span>
+              </div>
+              <Badge color={compRating.color} size="1">{compRating.label}</Badge>
+            </div>
+          </Flex>
+          <div className="mt-4">
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-1000 ${
+                  comprehensionPercentage >= 70 ? 'bg-gradient-to-r from-green-400 to-green-600' :
+                  comprehensionPercentage >= 50 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+                  'bg-gradient-to-r from-red-400 to-red-600'
+                }`}
+                style={{ width: `${comprehensionPercentage}%` }}
+              />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Insights Card */}
+      <Card className="p-5 mb-6 bg-slate-50 dark:bg-gray-800 border dark:border-gray-600">
+        <Flex align="center" gap="3" className="mb-3">
+          <FaChartLine className="text-xl text-slate-600 dark:text-slate-400" />
+          <Text className="font-semibold text-gray-700 dark:text-gray-200">Performance Insights</Text>
+        </Flex>
+        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+          {speed >= 250 ? (
+            <p>📚 Your reading speed is above average! You're reading faster than most adults.</p>
+          ) : (
+            <p>📚 Average adult reading speed is 200-250 WPM. Keep practicing to improve!</p>
+          )}
+          {comprehensionPercentage >= 80 ? (
+            <p>🧠 Excellent comprehension! You understood the text very well.</p>
+          ) : comprehensionPercentage >= 60 ? (
+            <p>🧠 Good comprehension. Try slowing down slightly to improve accuracy.</p>
+          ) : (
+            <p>🧠 Focus on understanding over speed. Try reading at a slower pace.</p>
+          )}
+          <p>💡 <strong>Tip:</strong> Balance speed and comprehension for the best score!</p>
+        </div>
+      </Card>
+
+      {/* Action Buttons */}
+      <Card className="p-4">
+        <Flex gap="3" justify="center" wrap="wrap">
+          <Link to="/general-exercise">
+            <Button variant="outline" size="3" className="cursor-pointer">
+              <IoRefreshOutline className="mr-2" /> Try Another
+            </Button>
+          </Link>
+          <Link to="/">
+            <Button variant="outline" size="3" className="cursor-pointer">
+              <IoHomeOutline className="mr-2" /> Home
+            </Button>
+          </Link>
+          {userEmail && (
+            <Button 
+              onClick={handleResult} 
+              size="3" 
+              color="green"
+              className="cursor-pointer"
+              disabled={saving}
+            >
+              <FaSave className="mr-2" /> 
+              {saving ? 'Saving...' : 'Save Result'}
+            </Button>
+          )}
+        </Flex>
+      </Card>
+
+      {/* Achievement Badge */}
+      {score >= 200 && (
+        <div className="mt-6 text-center">
+          <Card className="p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border border-yellow-200 dark:border-yellow-700 inline-block">
+            <Flex align="center" gap="2">
+              <FaMedal className="text-2xl text-yellow-500" />
+              <div>
+                <Text className="font-bold text-yellow-800 dark:text-yellow-400">Achievement Unlocked!</Text>
+                <Text className="text-sm text-yellow-600 dark:text-yellow-500 block">
+                  {score >= 300 ? 'Master Reader' : 'Skilled Reader'}
+                </Text>
+              </div>
+            </Flex>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

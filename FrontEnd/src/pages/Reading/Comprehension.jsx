@@ -70,7 +70,7 @@ function Comprehension() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto mt-8 px-4">
+    <div className="max-w-4xl mx-auto mt-8 px-4 text-gray-900 dark:text-gray-100">
       <Breadcrumbs items={breadcrumbs} />
       <Heading size="2" className="mb-4">Comprehension Questions</Heading>
       {questions.map((question) => (
@@ -79,13 +79,13 @@ function Comprehension() {
           <ul>
             {question.options.map((option, index) => (
               <li key={index} className="mb-2">
-                <label className="flex items-center">
+                <label className="flex items-center text-gray-800 dark:text-gray-200">
                   <input
                     type="radio"
                     name={`question-${question.id}`}
                     value={option}
                     onChange={() => handleAnswerChange(question.id, option)}
-                    className="mr-2"
+                    className="mr-2 accent-blue-600 dark:accent-blue-400"
                   />
                   {option}
                 </label>
@@ -96,7 +96,7 @@ function Comprehension() {
       ))}
       <button
         onClick={handleSubmit}
-        className="inline-block px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+        className="inline-block px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
       >
         Submit
       </button>

@@ -50,14 +50,14 @@ function Community() {
             Upcoming Events
           </Heading>
           <ul>
-            <li className="mb-2">
-              <Link href="#" className="text-blue-500 hover:underline">
+            <li className="mb-2 text-gray-700 dark:text-gray-300">
+              <Link href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
                 Speed Reading Workshop
               </Link>{' '}
               - May 15th, 2024
             </li>
-            <li className="mb-2">
-              <Link href="#" className="text-blue-500 hover:underline">
+            <li className="mb-2 text-gray-700 dark:text-gray-300">
+              <Link href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
                 Book Discussion: "The Power of Habit"
               </Link>{' '}
               - June 10th, 2024
@@ -72,7 +72,7 @@ function Community() {
           </Heading>
           <ul>
             <li className="mb-2">
-              <Link href="#" className="text-blue-500 hover:underline">
+              <Link href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
                 Tips for Improving Reading Speed
               </Link>{' '}
               <Badge color="blue" className="ml-2">
@@ -80,7 +80,7 @@ function Community() {
               </Badge>
             </li>
             <li className="mb-2">
-              <Link href="#" className="text-blue-500 hover:underline">
+              <Link href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
                 My Journey to Doubling Reading Speed
               </Link>
             </li>

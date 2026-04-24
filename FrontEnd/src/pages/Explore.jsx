@@ -20,7 +20,7 @@ const Explore = () => {
         <Card className="p-6 flex flex-col justify-center items-center">
           <RiArticleLine size="32" className="mb-4" />
           <Heading size="3" className="text-center mb-4">Articles</Heading>
-          <Text size="2" className="text-center text-gray-600 mb-4">
+          <Text size="2" className="text-center text-gray-600 dark:text-gray-400 mb-4">
             Explore a variety of articles on different topics.
           </Text>
           <Button className="w-full" variant="soft">
@@ -30,7 +30,7 @@ const Explore = () => {
         <Card className="p-6 flex flex-col justify-center items-center">
           <FaBookOpen size="32" className="mb-4" />
           <Heading size="3" className="text-center mb-4">Books</Heading>
-          <Text size="2" className="text-center text-gray-600 mb-4">
+          <Text size="2" className="text-center text-gray-600 dark:text-gray-400 mb-4">
             Discover new books and dive into captivating stories.
           </Text>
           <Button className="w-full cursor-pointer" variant="soft" >

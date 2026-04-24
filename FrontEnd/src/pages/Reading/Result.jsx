@@ -8,13 +8,13 @@ function ResultPage({ score, totalQuestions, speedReadingResult }) {
   const percentage = ((score / totalQuestions) * 100).toFixed(2);
 
   return (
-    <div className="max-w-4xl mx-auto mt-8 px-4">
+    <div className="max-w-4xl mx-auto mt-8 px-4 text-gray-900 dark:text-gray-100">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }]} icon={IoHomeOutline} />
       <div className="mt-8 text-center">
         <Heading size="4" className="mb-4">Result</Heading>
-        <p className="text-2xl mb-4">{`You scored ${score} out of ${totalQuestions}`}</p>
-        <p className="text-2xl mb-4">{`Speed Reading: ${speedReadingResult}`}</p>
-        <p className="text-xl mb-8">{`Percentage: ${percentage}%`}</p>
+        <p className="text-2xl mb-4 text-gray-900 dark:text-gray-100">{`You scored ${score} out of ${totalQuestions}`}</p>
+        <p className="text-2xl mb-4 text-gray-900 dark:text-gray-100">{`Speed Reading: ${speedReadingResult}`}</p>
+        <p className="text-xl mb-8 text-gray-700 dark:text-gray-300">{`Percentage: ${percentage}%`}</p>
         <div className="flex justify-center">
           <Button as={Link} to="/" variant="green" className="mr-4">Home</Button>
           <Button as={Link} to="/quiz" variant="blue">Retake Quiz</Button>

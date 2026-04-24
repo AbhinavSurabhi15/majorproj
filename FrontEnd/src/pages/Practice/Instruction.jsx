@@ -20,20 +20,20 @@ const Instruction = () => {
       {/* <Card className="max-w-md shadow-md rounded-lg overflow-hidden"> */}
       <div className="p-6">
         <div className="flex items-center mb-4">
-          <FaInfoCircle className="w-6 h-6 mr-2 text-blue-500" />
-          <Heading size="8">
+          <FaInfoCircle className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400" />
+          <Heading size="8" className="text-gray-900 dark:text-gray-100">
             Instruction For Readers
           </Heading>
         </div>
-        <Text className="text-sm text-gray-600 mb-4">
+        <Text className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Read for Speed is a tool designed to help you improve your reading speed and comprehension.
           Follow the instructions below to get started:
         </Text>
         <ol className="list-decimal pl-5">
-          <li className="text-gray-800 mb-2">Select a reading material from the provided options.</li>
-          <li className="text-gray-800 mb-2">Adjust the reading speed using the controls.</li>
-          <li className="text-gray-800 mb-2">Focus on reading the text as quickly as possible while maintaining comprehension.</li>
-          <li className="text-gray-800 mb-2">Track your progress and see how your reading speed improves over time.</li>
+          <li className="text-gray-800 dark:text-gray-200 mb-2">Select a reading material from the provided options.</li>
+          <li className="text-gray-800 dark:text-gray-200 mb-2">Adjust the reading speed using the controls.</li>
+          <li className="text-gray-800 dark:text-gray-200 mb-2">Focus on reading the text as quickly as possible while maintaining comprehension.</li>
+          <li className="text-gray-800 dark:text-gray-200 mb-2">Track your progress and see how your reading speed improves over time.</li>
         </ol>
         <div className="mt-6">
           <Link to="/exercise">

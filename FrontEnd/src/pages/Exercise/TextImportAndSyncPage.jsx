@@ -120,13 +120,13 @@ function TextImportAndSyncPage() {
         ]}
         icon={IoHomeOutline}
       />
-      <Heading as="h1" className="text-3xl font-bold mb-8">
+      <Heading as="h1" className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
         Text Import and Synchronization
       </Heading>
       <Card className="p-6 mb-8">
         <Flex justify="between" gap="4">
           <Box flex="1">
-            <Heading as="h2" className="text-xl font-bold mb-4">
+            <Heading as="h2" className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">
               Import Text <MdImportExport className='inline' />
             </Heading>
             <Flex gap="4">
@@ -140,7 +140,7 @@ function TextImportAndSyncPage() {
             </Flex>
           </Box>
           <Box flex="1">
-            <Heading as="h2" className="text-xl font-bold mb-4">
+            <Heading as="h2" className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">
               Sync Content From External Website <MdOutlineSync className='inline' />
             </Heading>
             <Button

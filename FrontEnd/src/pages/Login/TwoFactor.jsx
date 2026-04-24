@@ -4,19 +4,19 @@ import { Box, Button, Heading } from '@radix-ui/themes';
 function TwoFactor() {
   return (
     <div className="flex justify-center items-center mt-8">
-      <Box className="max-w-sm w-full px-6 py-8 rounded-lg" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
+      <Box className="max-w-sm w-full px-6 py-8 rounded-lg bg-white dark:bg-gray-800" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
         <div className="text-center">
           <Heading as="h2">Two-Factor Authentication</Heading>
-          <p className="mt-2 text-sm text-gray-500">Please enter the verification code sent to your device.</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Please enter the verification code sent to your device.</p>
         </div>
         <form className="mt-6">
           <div>
-            <label htmlFor="verification-code" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="verification-code" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Verification Code
             </label>
             <input
               type="text"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="verification-code"
               placeholder="Enter verification code"
               autoComplete="off"
@@ -28,7 +28,7 @@ function TwoFactor() {
               Verify
             </Button>
           </div>
-          <div className="mt-4 text-sm text-gray-500">
+          <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
             <p>
               Didn't receive the code? <a href="#" className="font-medium text-blue-500 hover:underline">Resend</a>
             </p>

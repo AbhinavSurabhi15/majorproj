@@ -1,40 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Heading, Flex, Callout, TextField, Badge, Dialog } from '@radix-ui/themes';
-import { IoPlayCircleOutline, IoPauseCircleOutline } from 'react-icons/io5';
+import { Button, Card, Heading, Flex, Callout, Badge, Dialog, Text, Progress } from '@radix-ui/themes';
+import { IoPlayCircleOutline, IoPauseCircleOutline, IoStopCircleOutline, IoRefreshOutline } from 'react-icons/io5';
 import Breadcrumbs from '../../components/Breadcrumb';
 import { IoHomeOutline } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { IoSettingsOutline } from 'react-icons/io5';
+import { InfoCircledIcon, CheckCircledIcon } from '@radix-ui/react-icons';
 import './ExerciseOne.css'; // Import CSS file for animations
 import { toast } from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { FaRegArrowAltCircleRight } from 'react-icons/fa';
+import { FaRegArrowAltCircleRight, FaTrophy } from 'react-icons/fa';
 
 function ExerciseOne() {
   const [exercise, setExercise] = useState([]);
   const [isReading, setIsReading] = useState(false);
   const [showText, setShowText] = useState(false);
   const [timer, setTimer] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(1);
   const [endReading, setEndReading] = useState(true);
   const [readingSpeed, setReadingSpeed] = useState(null);
   const [showReadingSpeedPopup, setShowReadingSpeedPopup] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const location = useLocation();
-  const maxAge = location.state?.maxAge || 18; // Default to 18 if not provided
-  console.log('maxAge:', maxAge);
+  const maxAge = location.state?.maxAge || 18;
 
   const getExercisebyAge = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`http://localhost:8080/exercise/getByAge/${maxAge}`);
-      console.log('Exercise data:', response.data);
       setExercise(response.data);
-      toast.success('Exercise fetched successfully!');
+      toast.success('Exercise loaded!');
     } catch (error) {
       console.error('Error fetching exercise:', error);
-      toast.error('Failed to fetch exercise. Please check if exercises exist for this age group.');
+      toast.error('Failed to load exercise. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,9 +44,6 @@ function ExerciseOne() {
       interval = setInterval(() => {
         setTimer((prevTimer) => prevTimer + 1);
       }, 1000);
-    } else {
-      clearInterval(interval);
-      setTimer(0);
     }
     return () => clearInterval(interval);
   }, [isReading]);
@@ -56,27 +53,36 @@ function ExerciseOne() {
   }, []);
 
   const handleStartReading = () => {
-    toast.success('Reading started!');
+    toast.success('Reading started! Focus on the text.');
     setIsReading(true);
     setShowText(true);
     const card = document.getElementById('reading-card');
-    card.classList.add('start-reading-animation');
+    card?.classList.add('start-reading-animation');
   };
 
   const handleEndReading = () => {
     setIsReading(false);
     setEndReading(false);
     const card = document.getElementById('reading-card');
-    card.classList.remove('start-reading-animation');
+    card?.classList.remove('start-reading-animation');
     calculateReadingSpeed();
   };
 
+  const handleReset = () => {
+    setIsReading(false);
+    setShowText(false);
+    setTimer(0);
+    setEndReading(true);
+    setReadingSpeed(null);
+    const card = document.getElementById('reading-card');
+    card?.classList.remove('start-reading-animation');
+    getExercisebyAge();
+  };
+
   const calculateReadingSpeed = () => {
-    // Get the number of words (for simplicity, split by space)
-    const words = exercise[0]?.content?.text.split(' ').length;
-    // Calculate reading speed in words per minute (WPM)
-    const readingSpeed = Math.round((words / (timer / 60)));
-    setReadingSpeed(readingSpeed);
+    const words = exercise[0]?.content?.text?.split(' ').length || 0;
+    const speed = Math.round((words / (timer / 60)));
+    setReadingSpeed(speed);
     setShowReadingSpeedPopup(true);
   };
 
@@ -86,92 +92,144 @@ function ExerciseOne() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const handleSpeedChange = (e) => {
-    setAnimationSpeed(parseFloat(e.target.value));
+  const getSpeedRating = (wpm) => {
+    if (wpm < 150) return { label: 'Slow Reader', color: 'orange', emoji: '📚' };
+    if (wpm < 250) return { label: 'Average Reader', color: 'blue', emoji: '📖' };
+    if (wpm < 400) return { label: 'Fast Reader', color: 'green', emoji: '⚡' };
+    return { label: 'Speed Reader', color: 'purple', emoji: '🚀' };
   };
+
+  const wordCount = exercise[0]?.content?.text?.split(' ').length || 0;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
-          { label: 'Exercise 1: ', href: '/general-exercise' },
+          { label: 'General Exercises', href: '/general-exercise' },
+          { label: 'Practice Fixation', href: '/exercise-one' },
         ]}
         icon={IoHomeOutline}
       />
-      <Heading as="h1" className="text-3xl font-bold mb-4">
-        Exercise 1: Exercise One
-      </Heading>
-      <Callout.Root>
+      
+      <div className="mb-6">
+        <Heading as="h1" className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+          Practice Fixation
+        </Heading>
+        <Text className="text-gray-600 dark:text-gray-400">
+          Train your eyes to follow text smoothly without jumping around
+        </Text>
+      </div>
+
+      <Callout.Root className="mb-6">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          Read the text below and click the start button to start reading.
+          Click <strong>Start Reading</strong> to reveal the text. The text will slowly scroll up. 
+          Click <strong>End Reading</strong> when you've finished to see your reading speed.
         </Callout.Text>
       </Callout.Root>
-      <Card className="p-6 mt-2 mb-8 bg-gray-200" alignItems="center">
-        <Flex gap="4" justify="center" alignItems="center" mb="4">
-          <Button onClick={handleStartReading} className="mr-2">
-            Start Reading <IoPlayCircleOutline />
-          </Button>
-          <Heading as="h2" className="text-xl font-bold mb-4">
-            <Badge size={'3'} color="gray" variant="outline">
-              Timer: {formatTime(timer)} Sec
-            </Badge>
-          </Heading>
-        </Flex>
-        <Card className="mb-8 w-480 mx-auto" id="reading-card">
-          {showText ? (
-            <p>{exercise[0]?.content?.text}</p>
-          ) : (
-            <p className="text-gray-400 italic text-center">Click "Start Reading" to reveal the text</p>
-          )}
-        </Card>
-        <Flex className="" gap="4" justify="center" alignItems="center" mb="4">
-          <Button onClick={handleEndReading} className="mr-2" disabled={!endReading}>
-            End Reading <IoPauseCircleOutline />
-          </Button>
-          <Link to="/comprehension" state={{ exercisedata: exercise[0], readingSpeed: readingSpeed }}>
-            <Button className="mr-2" disabled={endReading}>
-              Next <FaRegArrowAltCircleRight />
-            </Button>
-          </Link>
-        </Flex>
-      </Card>
-      <Dialog.Root open={showReadingSpeedPopup} onOpenChange={(open) => setShowReadingSpeedPopup(open)}>
-        {/* <Dialog.Backdrop /> */}
 
-        <Dialog.Content>
-          <Card className="p-6 mt-4">
-            <Heading as="h2" className="text-xl font-bold mb-4">
-              Reading Speed
-            </Heading>
-            <p>Your reading speed is {readingSpeed} words per minute (WPM).</p>
-            <Flex justify="center" mt="4">
-              <Button onClick={() => setShowReadingSpeedPopup(false)}>Close</Button>
+      {loading ? (
+        <Card className="p-8 text-center">
+          <Text className="text-gray-400 dark:text-gray-500">Loading exercise...</Text>
+        </Card>
+      ) : (
+        <>
+          {/* Controls Card */}
+          <Card className="p-4 mb-4">
+            <Flex gap="4" justify="between" alignItems="center" wrap="wrap">
+              <Flex gap="3" alignItems="center">
+                {!showText ? (
+                  <Button onClick={handleStartReading} variant="solid" color="green" size="3" className="cursor-pointer">
+                    <IoPlayCircleOutline size={20} className="mr-1" /> Start Reading
+                  </Button>
+                ) : endReading ? (
+                  <Button onClick={handleEndReading} variant="solid" color="red" size="3" className="cursor-pointer">
+                    <IoStopCircleOutline size={20} className="mr-1" /> End Reading
+                  </Button>
+                ) : (
+                  <Button onClick={handleReset} variant="outline" size="3" className="cursor-pointer">
+                    <IoRefreshOutline size={20} className="mr-1" /> Try Again
+                  </Button>
+                )}
+                
+                {!endReading && (
+                  <Link to="/comprehension" state={{ exercisedata: exercise[0], readingSpeed: readingSpeed }}>
+                    <Button variant="solid" color="blue" size="3" className="cursor-pointer">
+                      Continue <FaRegArrowAltCircleRight className="ml-1" />
+                    </Button>
+                  </Link>
+                )}
+              </Flex>
+
+              <Flex gap="3" alignItems="center">
+                <Badge size="2" color={isReading ? 'green' : 'gray'}>
+                  {isReading ? '● Reading' : '○ Paused'}
+                </Badge>
+                <Badge size="2" color="blue">
+                  ⏱️ {formatTime(timer)}
+                </Badge>
+                <Badge size="2" color="gray">
+                  📝 {wordCount} words
+                </Badge>
+              </Flex>
             </Flex>
           </Card>
+
+          {/* Reading Card */}
+          <Card className="p-6 mb-4 min-h-[300px] overflow-hidden" id="reading-card">
+            {showText ? (
+              <p className="text-lg leading-relaxed text-gray-800 dark:text-gray-200">{exercise[0]?.content?.text}</p>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-64 text-center">
+                <div className="text-6xl mb-4">📖</div>
+                <Text className="text-gray-500 dark:text-gray-400 text-lg">Click "Start Reading" to reveal the text</Text>
+                <Text className="text-gray-400 dark:text-gray-500 text-sm mt-2">The text will scroll up automatically</Text>
+              </div>
+            )}
+          </Card>
+        </>
+      )}
+
+      {/* Results Dialog */}
+      <Dialog.Root open={showReadingSpeedPopup} onOpenChange={setShowReadingSpeedPopup}>
+        <Dialog.Content className="max-w-md">
+          <div className="text-center py-4">
+            <div className="text-6xl mb-4">{readingSpeed && getSpeedRating(readingSpeed).emoji}</div>
+            <Heading as="h2" className="text-2xl font-bold mb-2">
+              Reading Complete!
+            </Heading>
+            <Badge color={readingSpeed && getSpeedRating(readingSpeed).color} size="2" className="mb-4">
+              {readingSpeed && getSpeedRating(readingSpeed).label}
+            </Badge>
+            
+            <Card className="p-4 mt-4 bg-gray-50 dark:bg-gray-800">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <Text className="text-3xl font-bold text-blue-600 dark:text-blue-400">{readingSpeed}</Text>
+                  <Text className="text-sm text-gray-500 dark:text-gray-400 block">Words/Minute</Text>
+                </div>
+                <div>
+                  <Text className="text-3xl font-bold text-green-600 dark:text-green-400">{formatTime(timer)}</Text>
+                  <Text className="text-sm text-gray-500 dark:text-gray-400 block">Time Taken</Text>
+                </div>
+              </div>
+            </Card>
+            
+            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-4 block">
+              Average reading speed is 200-250 WPM. Speed readers can achieve 400+ WPM!
+            </Text>
+            
+            <Flex justify="center" gap="3" mt="4">
+              <Button variant="outline" onClick={() => setShowReadingSpeedPopup(false)} className="cursor-pointer">
+                Close
+              </Button>
+            </Flex>
+          </div>
         </Dialog.Content>
       </Dialog.Root>
-      {/* <Card className="p-6 mt-2 mb-8 bg-gray-200">
-        <Heading as="h2" className="text-xl font-bold mb-4">
-          <IoSettingsOutline className="inline mr-2" />
-          Customize Settings
-        </Heading>
-        <Flex gap="4" alignItems="center">
-          <label htmlFor="animationSpeed">Animation Speed:</label>
-          <TextField.Root
-            id="animationSpeed"
-            type="number"
-            value={animationSpeed}
-            onChange={handleSpeedChange}
-            min="0.1"
-            max="10"
-            step="0.1"
-          />
-        </Flex>
-      </Card> */}
     </div>
   );
 }

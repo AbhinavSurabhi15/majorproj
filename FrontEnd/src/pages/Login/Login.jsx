@@ -102,10 +102,10 @@ function Login() {
   };
   return (
     <div className="flex justify-center items-center mt-8 mb-4">
-      <Box className="max-w-sm w-full px-6 py-8 rounded-lg" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
+      <Box className="max-w-sm w-full px-6 py-8 rounded-lg bg-white dark:bg-gray-800" style={{ boxShadow: 'var(--shadow-4)', borderRadius: 'var(--radius-3)' }}>
         <div className="text-center">
           <Heading as="h2">Login your Account !</Heading>
-          <p className="mt-2 text-sm text-gray-500 mb-4">Please sign in to your account</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 mb-4">Please sign in to your account</p>
         </div>
         {/* <div className="mb-4 text-center space-y-2 ml-3">
           <Button color="gray" className="flex items-center cursor-pointer px-16 py-5" variant="outline">
@@ -126,12 +126,12 @@ function Login() {
         </div> */}
         <form className="mt-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Email Address
             </label>
             <input
               type="email"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="email"
               placeholder="Enter your email"
               autoComplete="off"
@@ -140,12 +140,12 @@ function Login() {
             />
           </div>
           <div className="mt-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-500">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Password
             </label>
             <input
               type="password"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               id="password"
               placeholder="Enter your password"
               autoComplete="off"
@@ -156,7 +156,7 @@ function Login() {
           <div className="mt-6 flex items-center justify-between">
             <div className="flex items-center">
               <input type="checkbox" id="remember-me" className="w-4 h-4 text-blue-500 rounded focus:ring-blue-400" />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-500">
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-500 dark:text-gray-400">
                 Remember me
               </label>
             </div>
