@@ -72,9 +72,10 @@ export const getExerciseById = async (req, res) => {
 export const getExercisesByAge = async (req, res) => {
     try {
         const { age } = req.params; //Max age will be considered
+        const ageNum = parseInt(age, 10);
 
         // Find exercises where difficulty.maxAge is equal to age
-        const exercises = await Exercise.find({ 'difficulty.maxAge': age })
+        const exercises = await Exercise.find({ 'difficulty.maxAge': ageNum })
             .populate({
                 path: 'content',
                 populate: {
@@ -86,8 +87,12 @@ export const getExercisesByAge = async (req, res) => {
             return res.status(404).json({ message: 'No exercises found for this age' });
         }
 
-        // Send the fetched exercises in the response
-        res.status(200).json(exercises);
+        // Pick a random exercise from available ones
+        const randomIndex = Math.floor(Math.random() * exercises.length);
+        const randomExercise = exercises[randomIndex];
+
+        // Send the random exercise in an array format for backward compatibility
+        res.status(200).json([randomExercise]);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });

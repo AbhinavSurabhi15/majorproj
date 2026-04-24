@@ -15,6 +15,7 @@ import { FaRegArrowAltCircleRight } from 'react-icons/fa';
 function ExerciseOne() {
   const [exercise, setExercise] = useState([]);
   const [isReading, setIsReading] = useState(false);
+  const [showText, setShowText] = useState(false);
   const [timer, setTimer] = useState(0);
   const [animationSpeed, setAnimationSpeed] = useState(1);
   const [endReading, setEndReading] = useState(true);
@@ -57,6 +58,7 @@ function ExerciseOne() {
   const handleStartReading = () => {
     toast.success('Reading started!');
     setIsReading(true);
+    setShowText(true);
     const card = document.getElementById('reading-card');
     card.classList.add('start-reading-animation');
   };
@@ -120,7 +122,11 @@ function ExerciseOne() {
           </Heading>
         </Flex>
         <Card className="mb-8 w-480 mx-auto" id="reading-card">
-          <p>{exercise[0]?.content?.text}</p>
+          {showText ? (
+            <p>{exercise[0]?.content?.text}</p>
+          ) : (
+            <p className="text-gray-400 italic text-center">Click "Start Reading" to reveal the text</p>
+          )}
         </Card>
         <Flex className="" gap="4" justify="center" alignItems="center" mb="4">
           <Button onClick={handleEndReading} className="mr-2" disabled={!endReading}>

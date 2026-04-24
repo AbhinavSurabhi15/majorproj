@@ -138,11 +138,18 @@ function Comprehension() {
         </div>
       )}
 
-      <Link to="/result" state={{readingSpeed:readingSpeed,  percentageCorrect:percentageCorrect, exercisedata:exercisedata}}>
-        <Button className="mr-2 mt-4">
-          Next <IoHomeOutline />
-        </Button>
-      </Link>
+      {answersChecked && (
+        <div className="flex justify-center mt-4">
+          <div className="text-center mb-4 mr-4">
+            <Text className="font-bold text-lg">Your Score: {percentageCorrect.toFixed(0)}%</Text>
+          </div>
+          <Link to="/result" state={{readingSpeed:readingSpeed, percentageCorrect:percentageCorrect, exercisedata:exercisedata}}>
+            <Button className="mr-2">
+              Next <IoHomeOutline />
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
