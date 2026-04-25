@@ -1,43 +1,48 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Heading, Flex, Badge, Text } from '@radix-ui/themes';
 import Breadcrumbs from '../../components/Breadcrumb';
 import { IoHomeOutline, IoSpeedometer, IoTrophy, IoRocket, IoRefreshOutline } from 'react-icons/io5';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaSave, FaBrain, FaChartLine, FaMedal, FaStar } from 'react-icons/fa';
-import axios from 'axios';
 import ConfettiExplosion from 'react-confetti-explosion';
-import { getUserData } from '../../services/authService';
+import { getUserData, getLoggedIn } from '../../services/authService';
 import { toast } from 'react-hot-toast';
+import api from '../../services/axiosConfig.js';
 
 function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showConfetti, setShowConfetti] = useState(true);
-  
+
+  const loggedIn = getLoggedIn();
   const userdata = getUserData();
   const percentageCorrect = state?.percentageCorrect || 0;
   const readingSpeed = state?.readingSpeed || 0;
   const exercisedata = state?.exercisedata;
   const userEmail = userdata?.user?.userEmail;
 
-  const usersalldata = async () => {
+  const fetchUserDetails = async () => {
+    if (!userEmail) return;
+    setLoadingUser(true);
     try {
-      const response = await axios.post('http://localhost:8080/user/getAllDetails', { email: userEmail });
+      const response = await api.post('/user/getAllDetails', { email: userEmail });
       setUserDetails(response.data);
     } catch (error) {
       console.error('Failed to fetch user details:', error);
+    } finally {
+      setLoadingUser(false);
     }
   };
 
   useEffect(() => {
-    if (userEmail) usersalldata();
-    // Hide confetti after a few seconds
+    if (loggedIn && userEmail) fetchUserDetails();
     const timer = setTimeout(() => setShowConfetti(false), 5000);
     return () => clearTimeout(timer);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loggedIn, userEmail]);
 
   const userId = userDetails?._id;
   const speed = readingSpeed;
@@ -79,21 +84,49 @@ function Result() {
   const compRating = getComprehensionRating();
 
   const handleResult = async () => {
-    if (!userId || !exercisedata?._id) {
+    if (!loggedIn || !userEmail) {
       toast.error('Please login to save your result');
+      navigate('/login');
       return;
     }
-    
+    if (!exercisedata?._id) {
+      toast.error('Missing exercise data — cannot save result');
+      return;
+    }
+    if (!userId) {
+      // userDetails still loading or failed — try once more before giving up
+      toast.loading('Loading your account…', { id: 'save-result' });
+      try {
+        const response = await api.post('/user/getAllDetails', { email: userEmail });
+        setUserDetails(response.data);
+        if (!response.data?._id) {
+          toast.error('Could not load your account. Please re-login.', { id: 'save-result' });
+          return;
+        }
+        // continue saving with freshly fetched id
+        await saveResult(response.data._id);
+        toast.dismiss('save-result');
+        return;
+      } catch (err) {
+        console.error(err);
+        toast.error('Could not load your account. Please re-login.', { id: 'save-result' });
+        return;
+      }
+    }
+    await saveResult(userId);
+  };
+
+  const saveResult = async (uid) => {
     setSaving(true);
     try {
-      await axios.post('http://localhost:8080/user/result/create', {
-        userId: userId,
+      await api.post('/user/result/create', {
+        userId: uid,
         exerciseId: exercisedata._id,
         score: score,
         wpm: speed,
       });
       toast.success('Result saved successfully!');
-      navigate('/general-exercise');
+      navigate('/profile');
     } catch (error) {
       console.error(error);
       toast.error('Failed to save result. Please try again.');
@@ -256,16 +289,16 @@ function Result() {
               <IoHomeOutline className="mr-2" /> Home
             </Button>
           </Link>
-          {userEmail && (
+          {loggedIn && (
             <Button 
               onClick={handleResult} 
               size="3" 
               color="green"
               className="cursor-pointer"
-              disabled={saving}
+              disabled={saving || loadingUser}
             >
               <FaSave className="mr-2" /> 
-              {saving ? 'Saving...' : 'Save Result'}
+              {saving ? 'Saving...' : loadingUser ? 'Preparing…' : 'Save Result'}
             </Button>
           )}
         </Flex>
